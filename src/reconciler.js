@@ -6,12 +6,44 @@ export function render(element, container) {
   rootInstance = nextInstance;
 }
 
+function reconcileChildren(instance, element) {
+  const prevChildInstances = instance.childInstances;
+  const childElements = element.props.children || [];
+  const count = Math.max(prevChildInstances.length, childElements.length);
+  const childInstances = [];
+  for (let i = 0; i < count; i++) {
+    const childInstance = reconcile(
+      instance.dom,
+      prevChildInstances[i] || null,
+      childElements[i]
+    );
+    if (childInstance) {
+      // 过滤掉已移除的 instance
+      childInstances.push(childInstance);
+    }
+  }
+  return childInstances;
+}
+
 function reconcile(parentDom, instance, element) {
-  if (instance == null) {
+  debugger;
+  if (instance === null) {
     debugger;
     const newInstance = instantiate(element); // 第一次实例化完成（包含 childInstances)
     parentDom.appendChild(newInstance.dom); // 此时的 dom，已经收集好了所有子元素
     return newInstance; // 返回并存储到 rootInstance 中，供下次 render 时使用
+  } else if (!element) {
+    // 更新时删除了该节点
+    parentDom.removeChild(instance.dom);
+    return null;
+  } else if (instance.element.type === element.type) {
+    // 上次 render 的 element type 和本次将要 render 的 element type 相同
+    // 更新 dom 属性
+    updateDomProperties(instance.dom, instance.element.props, element.props);
+    // 更新 childInstances
+    instance.childInstances = reconcileChildren(instance, element);
+    instance.element = element;
+    return instance;
   } else {
     const newInstance = instantiate(element);
     parentDom.replaceChild(newInstance.dom, instance.dom); // 暴力替换
