@@ -8,25 +8,6 @@ export function render(element, container) {
   rootInstance = nextInstance;
 }
 
-function reconcileChildren(instance, element) {
-  const prevChildInstances = instance.childInstances;
-  const childElements = element.props.children || [];
-  const count = Math.max(prevChildInstances.length, childElements.length);
-  const childInstances = [];
-  for (let i = 0; i < count; i++) {
-    const childInstance = reconcile(
-      instance.dom,
-      prevChildInstances[i] || null,
-      childElements[i]
-    );
-    if (childInstance) {
-      // 过滤掉已移除的 instance
-      childInstances.push(childInstance);
-    }
-  }
-  return childInstances;
-}
-
 function reconcile(parentDom, instance, element) {
   if (instance === null) {
     const newInstance = instantiate(element); // 第一次实例化完成（包含 childInstances)
@@ -54,7 +35,61 @@ function reconcile(parentDom, instance, element) {
   }
 }
 
+function instantiate(element) {
+  const { type, props } = element;
+
+  // Create DOM element
+  const isTextElement = type === "TEXT ELEMENT";
+  const dom = isTextElement
+    ? document.createTextNode("")
+    : document.createElement(type);
+
+  updateDomProperties(dom, [], props);
+
+  // Instantiate and append children
+  const childElements = props.children || [];
+  const childInstances = childElements.map(instantiate);
+  childInstances.forEach(child => {
+    dom.appendChild(child.dom);
+  });
+
+  // return to reconcile
+  const instance = { dom, element, childInstances };
+  return instance;
+}
+
+function reconcileChildren(instance, element) {
+  const prevChildInstances = instance.childInstances;
+  const childElements = element.props.children || [];
+  const count = Math.max(prevChildInstances.length, childElements.length);
+  const childInstances = [];
+  for (let i = 0; i < count; i++) {
+    const childInstance = reconcile(
+      instance.dom,
+      prevChildInstances[i] || null,
+      childElements[i]
+    );
+    if (childInstance) {
+      // 过滤掉已移除的 instance
+      childInstances.push(childInstance);
+    }
+  }
+  return childInstances;
+}
+
 function updateDomProperties(dom, prevProps, nextProps) {
+  // 低版本的 rollup 会报错，因为 acorn Parser 没有支持对象 spread 语法
+  // https://github.com/rollup/rollup/issues/1613
+  // 升级 rollup 版本即可
+  const { children: prevChildren, ...prevOtherProps } = prevProps;
+  const { children: nextChildren, ...nextOtherProps } = nextProps;
+
+  if (deepEqual(prevOtherProps, nextOtherProps)) {
+    // 如果除了 children 属性 新旧 props 都相同
+    // 则跳过 DOM 属性更新
+    return;
+  }
+
   const isEvent = name => name.startsWith("on");
   const isAttribute = name => !isEvent(name) && name != "children";
 
@@ -87,27 +122,4 @@ function updateDomProperties(dom, prevProps, nextProps) {
       const eventType = name.toLowerCase().substring(2);
       dom.addEventListener(eventType, nextProps[name]);
     });
-}
-
-function instantiate(element) {
-  const { type, props } = element;
-
-  // Create DOM element
-  const isTextElement = type === "TEXT ELEMENT";
-  const dom = isTextElement
-    ? document.createTextNode("")
-    : document.createElement(type);
-
-  updateDomProperties(dom, [], props);
-
-  // Instantiate and append children
-  const childElements = props.children || [];
-  const childInstances = childElements.map(instantiate);
-  childInstances.forEach(child => {
-    dom.appendChild(child.dom);
-  });
-
-  // return to reconcile
-  const instance = { dom, element, childInstances };
-  return instance;
 }

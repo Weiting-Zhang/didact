@@ -30,7 +30,7 @@
     "babel-register": "^6.24.1",
     "browser-env": "^2.0.29",
     "npm-run-all": "^4.0.2",
-    "rollup": "^0.41.6"
+    "rollup": "^1.27.14"
   },
   "ava": {
     "require": [
