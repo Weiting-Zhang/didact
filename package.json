@@ -16,8 +16,8 @@
     "build:main": "npx rollup src/didact.js -f umd -n didact -o dist/didact.umd.js",
     "build": "run-p build:module build:main",
     "prepublishOnly": "npm run build",
-    "demo": "npx babel examples/test.js  --out-dir dist",
-    "ex": "npm run build:main && npm run demo"
+    "ex": "npx babel examples/test.js  --out-dir dist",
+    "demo": "npm run build:main && npm run ex"
   },
   "keywords": [
     "react"

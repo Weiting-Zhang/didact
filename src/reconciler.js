@@ -28,9 +28,7 @@ function reconcileChildren(instance, element) {
 }
 
 function reconcile(parentDom, instance, element) {
-  debugger;
   if (instance === null) {
-    debugger;
     const newInstance = instantiate(element); // 第一次实例化完成（包含 childInstances)
     parentDom.appendChild(newInstance.dom); // 此时的 dom，已经收集好了所有子元素
     return newInstance; // 返回并存储到 rootInstance 中，供下次 render 时使用
