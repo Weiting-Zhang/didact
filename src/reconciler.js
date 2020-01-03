@@ -1,3 +1,5 @@
+import { deepEqual } from "./dom-utils";
+
 let rootInstance = null;
 
 export function render(element, container) {
@@ -38,10 +40,13 @@ function reconcile(parentDom, instance, element) {
     return null;
   } else if (instance.element.type === element.type) {
     // 上次 render 的 element type 和本次将要 render 的 element type 相同
-    // 更新 dom 属性
-    updateDomProperties(instance.dom, instance.element.props, element.props);
-    // 更新 childInstances
-    instance.childInstances = reconcileChildren(instance, element);
+    if (!deepEqual(element.props, instance.element.props)) {
+      // 新旧 props 有不同
+      // 更新 dom 属性
+      updateDomProperties(instance.dom, instance.element.props, element.props);
+      // 更新 childInstances
+      instance.childInstances = reconcileChildren(instance, element);
+    }
     instance.element = element;
     return instance;
   } else {
