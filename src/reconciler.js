@@ -8,7 +8,7 @@ export function render(element, container) {
   rootInstance = nextInstance;
 }
 
-function reconcile(parentDom, instance, element) {
+export function reconcile(parentDom, instance, element) {
   if (instance === null) {
     const newInstance = instantiate(element); // 第一次实例化完成（包含 childInstances)
     parentDom.appendChild(newInstance.dom); // 此时的 dom，已经收集好了所有子元素
@@ -17,7 +17,14 @@ function reconcile(parentDom, instance, element) {
     // 更新时删除了该节点
     parentDom.removeChild(instance.dom);
     return null;
-  } else if (instance.element.type === element.type) {
+  } else if (instance.publicInstance) {
+    const { childInstance: prevChildInstance, publicInstance } = instance;
+    const childElement = publicInstance.render();
+    const childInstance = reconcile(parentDom, prevChildInstance, childElement);
+    instance.childInstance = childInstance;
+    instance.dom = childInstance.dom;
+    return instance;
+  } else if (instance.element.type === element.type && typeof element.type === 'string') {
     // 上次 render 的 element type 和本次将要 render 的 element type 相同
     if (!deepEqual(element.props, instance.element.props)) {
       // 新旧 props 有不同
@@ -37,25 +44,36 @@ function reconcile(parentDom, instance, element) {
 
 function instantiate(element) {
   const { type, props } = element;
+  const isDomElement = typeof type === 'string';
+  if (isDomElement) {
+    // Create DOM element
+    const isTextElement = type === "TEXT ELEMENT";
+    const dom = isTextElement
+      ? document.createTextNode("")
+      : document.createElement(type);
 
-  // Create DOM element
-  const isTextElement = type === "TEXT ELEMENT";
-  const dom = isTextElement
-    ? document.createTextNode("")
-    : document.createElement(type);
+    updateDomProperties(dom, [], props);
 
-  updateDomProperties(dom, [], props);
+    // Instantiate and append children
+    const childElements = props.children || [];
+    const childInstances = childElements.map(instantiate);
+    childInstances.forEach(child => {
+      dom.appendChild(child.dom);
+    });
 
-  // Instantiate and append children
-  const childElements = props.children || [];
-  const childInstances = childElements.map(instantiate);
-  childInstances.forEach(child => {
-    dom.appendChild(child.dom);
-  });
-
-  // return to reconcile
-  const instance = { dom, element, childInstances };
-  return instance;
+    // return to reconcile
+    const instance = { dom, element, childInstances };
+    return instance;
+  } else {
+    // class
+    const instance = {};
+    const publicInstance = createPublicInstance(element, instance);
+    const childElement = publicInstance.render();
+    const childInstance = instantiate(childElement);
+    const dom = childInstance.dom;
+    Object.assign(instance, { dom, element, childInstance, publicInstance });
+    return instance;
+  }
 }
 
 function reconcileChildren(instance, element) {
@@ -75,6 +93,13 @@ function reconcileChildren(instance, element) {
     }
   }
   return childInstances;
+}
+
+function createPublicInstance(element, internalInstance) {
+  const { type, props } = element;
+  const publicInstance = new type(props);
+  publicInstance.__internalInstance = internalInstance;
+  return publicInstance;
 }
 
 function updateDomProperties(dom, prevProps, nextProps) {
