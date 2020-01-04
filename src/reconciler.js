@@ -17,7 +17,7 @@ export function reconcile(parentDom, instance, element) {
     // 更新时删除了该节点
     parentDom.removeChild(instance.dom);
     return null;
-  } else if (instance.publicInstance) {
+  } else if (instance.publicInstance && instance.element.type === element.type) { // 由同一个组件类生成
     const { childInstance: prevChildInstance, publicInstance } = instance;
     const childElement = publicInstance.render();
     const childInstance = reconcile(parentDom, prevChildInstance, childElement);

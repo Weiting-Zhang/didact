@@ -1,48 +1,29 @@
 /** @jsx didact.createElement */
 
-const stories = [
-  { name: "Didact introduction", url: "http://bit.ly/2pX7HNn" },
-  { name: "Rendering DOM elements ", url: "http://bit.ly/2qCOejH" },
-  { name: "Element creation and JSX", url: "http://bit.ly/2qGbw8S" },
-  { name: "Instances and reconciliation", url: "http://bit.ly/2q4A746" },
-  { name: "Components and state", url: "http://bit.ly/2rE16nh" }
-];
+const React = didact;
+const ReactDOM = didact;
 
-class App extends didact.Component {
-  render() {
-    return (
-      <div>
-        <h1>Didact Stories</h1>
-        <ul>
-          {this.props.stories.map(story => {
-            return <Story name={story.name} url={story.url} />;
-          })}
-        </ul>
-      </div>
-    );
-  }
+class App extends React.Component {
+    constructor() {
+        super();
+        this.state = {
+            num: 0
+        }
+    }
+    onClick() {
+        for ( let i = 0; i < 100; i++ ) {
+            this.setState( { num: this.state.num + 1 } );
+            console.log( this.state.num );    // 会输出什么？
+        }
+    }
+    render() {
+        return (
+            <div className="App">
+                <h1>{ this.state.num }</h1>
+                <button onClick={this.onClick.bind(this)}>updateState</button>
+            </div>
+        );
+    }
 }
 
-class Story extends didact.Component {
-  constructor(props) {
-    super(props);
-    this.state = { likes: Math.ceil(Math.random() * 100) };
-  }
-  like() {
-    this.setState({
-      likes: this.state.likes + 1
-    });
-  }
-  render() {
-    const { name, url } = this.props;
-    const { likes } = this.state;
-    return (
-      <li>
-        <button onClick={e => this.like()}>{likes}<b>❤️</b></button>
-        <a href={url}>{name}</a>
-      </li>
-    );
-  }
-}
-
-didact.render(<App stories={stories} />, document.getElementById("root"));
+ReactDOM.render(<App />, document.getElementById("root"));
