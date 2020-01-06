@@ -14,6 +14,8 @@ export default class Component {
   }
 }
 
+Component.prototype.isReactComponent = true;
+
 function scheduleWork(component) {
   if (component.shouldUpdate) {
     component.shouldUpdate = false;

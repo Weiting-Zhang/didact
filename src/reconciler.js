@@ -27,7 +27,6 @@ export function reconcile(parentDom, instance, element) {
     return instance;
   } else if (instance.element.type === element.type && typeof element.type === 'function') {
     // 函数式组件
-    debugger;
     const { childInstance: prevChildInstance } = instance;
     const childElement = element.type(element.props);
     const childInstance = reconcile(parentDom, prevChildInstance, childElement);
@@ -56,7 +55,7 @@ function instantiate(element) {
   const { type, props } = element;
   const isDomElement = typeof type === 'string';
   const isClassComponent = typeof type === 'function'
-    && type.prototype instanceof Component;
+    && type.prototype.isReactComponent;
   if (isDomElement) {
     // Create DOM element
     const isTextElement = type === "TEXT ELEMENT";
