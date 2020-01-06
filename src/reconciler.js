@@ -7,7 +7,6 @@ export function render(element, container) {
   const nextInstance = reconcile(container, prevInstance, element);
   rootInstance = nextInstance;
 }
-console.log('---import')
 
 export function reconcile(parentDom, instance, element) {
   if (instance === null) {

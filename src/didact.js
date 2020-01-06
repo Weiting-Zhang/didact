@@ -1,18 +1,20 @@
 import { createElement } from './element';
 import Component from './component';
 import { render } from './reconciler';
-import { useState } from './hooks';
+import { useState, withState } from './hooks';
 
 export default {
 	createElement,
 	Component,
 	render,
-	useState
+	useState,
+	withState
 };
 
 export {
 	createElement,
 	Component,
 	render,
-	useState
+	useState,
+	withState
 };
