@@ -1,5 +1,4 @@
 import { deepEqual } from "./dom-utils";
-import Component from './component'
 
 let rootInstance = null;
 
@@ -8,6 +7,7 @@ export function render(element, container) {
   const nextInstance = reconcile(container, prevInstance, element);
   rootInstance = nextInstance;
 }
+console.log('---import')
 
 export function reconcile(parentDom, instance, element) {
   if (instance === null) {
@@ -18,7 +18,8 @@ export function reconcile(parentDom, instance, element) {
     // 更新时删除了该节点
     parentDom.removeChild(instance.dom);
     return null;
-  } else if (instance.publicInstance && instance.element.type === element.type) { // 由同一个组件类生成
+  } else if (instance.publicInstance && instance.element.type === element.type) {
+    // 类组件
     const { childInstance: prevChildInstance, publicInstance } = instance;
     const childElement = publicInstance.render();
     const childInstance = reconcile(parentDom, prevChildInstance, childElement);
@@ -34,7 +35,7 @@ export function reconcile(parentDom, instance, element) {
     instance.dom = childInstance.dom;
     return instance;
   } else if (instance.element.type === element.type && typeof element.type === 'string') {
-    // 上次 render 的 element type 和本次将要 render 的 element type 相同
+    // dom 标签
     if (!deepEqual(element.props, instance.element.props)) {
       // 新旧 props 有不同
       // 更新 dom 属性
