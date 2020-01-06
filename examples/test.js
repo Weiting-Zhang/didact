@@ -3,27 +3,9 @@
 const React = didact;
 const ReactDOM = didact;
 
-class App extends React.Component {
-    constructor() {
-        super();
-        this.state = {
-            num: 0
-        }
-    }
-    onClick() {
-        for ( let i = 0; i < 100; i++ ) {
-            this.setState( { num: this.state.num + 1 } );
-            console.log( this.state.num );    // 会输出什么？
-        }
-    }
-    render() {
-        return (
-            <div className="App">
-                <h1>{ this.state.num }</h1>
-                <button onClick={this.onClick.bind(this)}>updateState</button>
-            </div>
-        );
-    }
+function Welcome(props) {
+  return <h1>Hello, {props.name}</h1>;
 }
 
-ReactDOM.render(<App />, document.getElementById("root"));
+const element = <Welcome name="Sara" />;
+ReactDOM.render(element, document.getElementById("root"));

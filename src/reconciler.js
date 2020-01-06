@@ -1,4 +1,5 @@
 import { deepEqual } from "./dom-utils";
+import Component from './component'
 
 let rootInstance = null;
 
@@ -24,6 +25,15 @@ export function reconcile(parentDom, instance, element) {
     instance.childInstance = childInstance;
     instance.dom = childInstance.dom;
     return instance;
+  } else if (instance.element.type === element.type && typeof element.type === 'function') {
+    // 函数式组件
+    debugger;
+    const { childInstance: prevChildInstance } = instance;
+    const childElement = element.type(element.props);
+    const childInstance = reconcile(parentDom, prevChildInstance, childElement);
+    instance.childInstance = childInstance;
+    instance.dom = childInstance.dom;
+    return instance;
   } else if (instance.element.type === element.type && typeof element.type === 'string') {
     // 上次 render 的 element type 和本次将要 render 的 element type 相同
     if (!deepEqual(element.props, instance.element.props)) {
@@ -45,6 +55,8 @@ export function reconcile(parentDom, instance, element) {
 function instantiate(element) {
   const { type, props } = element;
   const isDomElement = typeof type === 'string';
+  const isClassComponent = typeof type === 'function'
+    && type.prototype instanceof Component;
   if (isDomElement) {
     // Create DOM element
     const isTextElement = type === "TEXT ELEMENT";
@@ -64,7 +76,7 @@ function instantiate(element) {
     // return to reconcile
     const instance = { dom, element, childInstances };
     return instance;
-  } else {
+  } else if (isClassComponent) {
     // class
     const instance = {};
     const publicInstance = createPublicInstance(element, instance);
@@ -72,6 +84,14 @@ function instantiate(element) {
     const childInstance = instantiate(childElement);
     const dom = childInstance.dom;
     Object.assign(instance, { dom, element, childInstance, publicInstance });
+    return instance;
+  } else {
+    // function component
+    const instance = {};
+    const childElement = type(props);
+    const childInstance = instantiate(childElement);
+    const dom = childInstance.dom;
+    Object.assign(instance, { dom, element, childInstance });
     return instance;
   }
 }
