@@ -1,14 +1,15 @@
 import { createElement } from './element';
 import Component from './component';
 import { render } from './reconciler';
-import { useState, withState } from './hooks';
+import { useState, withState, useReducer } from './hooks';
 
 export default {
 	createElement,
 	Component,
 	render,
 	useState,
-	withState
+	withState,
+	useReducer
 };
 
 export {
@@ -16,5 +17,6 @@ export {
 	Component,
 	render,
 	useState,
-	withState
+	withState,
+	useReducer
 };

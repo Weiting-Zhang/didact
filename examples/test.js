@@ -2,23 +2,34 @@
 
 const React = didact;
 const ReactDOM = didact;
-const useState = didact.useState;
+// const useState = didact.useState;
 const withState = didact.withState;
+const useReducer = didact.useReducer
 
-const Example = withState(
-  function Example() {
-  // 声明一个叫 "count" 的 state 变量
-    const [count, setCount] = useState(0);
-
+const Counter = withState(
+  function Counter() {
+    const [state, dispatch] = useReducer(reducer, initialState);
     return (
       <div>
-        <p>You clicked {count} times</p>
-        <button onClick={() => setCount(count + 1)}>
-          Click me
-        </button>
+        Count: {state.count}
+        <button onClick={() => dispatch({type: 'decrement'})}>-</button>
+        <button onClick={() => dispatch({type: 'increment'})}>+</button>
       </div>
     );
   }
 )
 
-ReactDOM.render(<Example/>, document.getElementById("root"));
+const initialState = {count: 0};
+
+function reducer(state, action) {
+  switch (action.type) {
+    case 'increment':
+      return {count: state.count + 1};
+    case 'decrement':
+      return {count: state.count - 1};
+    default:
+      throw new Error();
+  }
+}
+
+ReactDOM.render(<Counter/>, document.getElementById("root"));

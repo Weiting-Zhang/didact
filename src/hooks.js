@@ -20,9 +20,22 @@ export function useState(defaultState) {
 
   return [states[index], setState]
 }
+
+export function useReducer(reducer, initialState) {
+  const [state, setState] = useState(initialState);
+
+  function dispatch(action) {
+    const nextState = reducer(state, action);
+    setState(nextState);
+  }
+
+  return [state, dispatch];
+}
  
 export function withState(func) {
   const states = {};
+  // 这里把函数式组件转化成了类组件
+  // 方便通过 __internalInstance 去获得更新时的上下文
   return ((...args) => {
     class withHooks extends Component {
       render () {
